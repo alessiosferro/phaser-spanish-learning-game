@@ -41,18 +41,18 @@ gameScene.init = function() {
 
 // load asset files for our game
 gameScene.preload = function() {
-  this.load.image('background', '../assets/images/background-city.png');
-  this.load.image('building', '../assets/images/building.png');
-  this.load.image('car', '../assets/images/car.png');
-  this.load.image('house', '../assets/images/house.png');
-  this.load.image('tree', '../assets/images/tree.png');
+  this.load.image('background', 'assets/images/background-city.png');
+  this.load.image('building', 'assets/images/building.png');
+  this.load.image('car', 'assets/images/car.png');
+  this.load.image('house', 'assets/images/house.png');
+  this.load.image('tree', 'assets/images/tree.png');
 
-  this.load.audio('treeAudio', '../assets/audio/arbol.mp3');
-  this.load.audio('carAudio', '../assets/audio/auto.mp3');
-  this.load.audio('houseAudio', '../assets/audio/casa.mp3');
-  this.load.audio('correctAudio', '../assets/audio/correct.mp3');
-  this.load.audio('wrongAudio', '../assets/audio/wrong.mp3');
-  this.load.audio('buildingAudio', '../assets/audio/edificio.mp3');
+  this.load.audio('treeAudio', 'assets/audio/arbol.mp3');
+  this.load.audio('carAudio', 'assets/audio/auto.mp3');
+  this.load.audio('houseAudio', 'assets/audio/casa.mp3');
+  this.load.audio('correctAudio', 'assets/audio/correct.mp3');
+  this.load.audio('wrongAudio', 'assets/audio/wrong.mp3');
+  this.load.audio('buildingAudio', 'assets/audio/edificio.mp3');
 };
 
 // executed once, after assets were loaded
@@ -93,7 +93,6 @@ gameScene.create = function() {
       to: 190,
       onUpdate: (tween) => {
         const value = Math.floor(tween.getValue());
-
         item.setTint(Phaser.Display.Color.GetColor(value, value, value));
       },
       duration: 200,
@@ -125,8 +124,10 @@ gameScene.create = function() {
     }, this);
 
     item.on('pointerover', () => {
+      console.log('HERE')
       item.tintTweenIn.restart();
     });
+
     item.on('pointerout', () => {
       item.tintTweenIn.stop();
       item.tintTweenOut.restart();
