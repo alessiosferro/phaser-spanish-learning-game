@@ -2,7 +2,42 @@
 let gameScene = new Phaser.Scene('Game');
 
 // some parameters for our scene
-gameScene.init = function() {}
+gameScene.init = function() {
+
+  this.words = this.words = [{
+    key: 'building',
+    setXY: {
+      x: 90,
+      y: 240
+    },
+    spanish: 'edificio'
+  },
+    {
+      key: 'house',
+      setXY: {
+        x: 260,
+        y: 270
+      },
+      spanish: 'casa'
+    },
+    {
+      key: 'car',
+      setXY: {
+        x: 440,
+        y: 290
+      },
+      spanish: 'automóvil'
+    },
+    {
+      key: 'tree',
+      setXY: {
+        x: 570,
+        y: 260
+      },
+      spanish: 'árbol'
+    }
+  ];
+}
 
 // load asset files for our game
 gameScene.preload = function() {
@@ -22,61 +57,97 @@ gameScene.preload = function() {
 
 // executed once, after assets were loaded
 gameScene.create = function() {
-  this.items = this.add.group([
-    {
-      key: 'building',
-      setXY: {
-        x: 140,
-        y: 230
-      }
-    },
-    {
-      key: 'car',
-      setXY: {
-        x: 270,
-        y: 290
-      },
-      setScale: {
-        x: .5,
-        y: .5
-      }
-    },
-    {
-      key: 'tree',
-      setXY: {
-        x: 370,
-        y: 255,
-      },
-      setScale: {
-        x: .8,
-        y: .8
-      }
-    },
-    {
-      key: 'house',
-      setXY: {
-        x: 500,
-        y: 270
-      },
-      setScale: {
-        x: .7,
-        y: .7
-      }
-    }
-  ]);
+  this.items = this.add.group(this.words);
 
   this.add.sprite(0, 0, 'background').setOrigin(0);
 
   this.items.setDepth(1);
 
+  this.correctSound = this.sound.add('correctAudio');
+  this.wrongSound = this.sound.add('wrongAudio');
+
   Phaser.Actions.Call(this.items.getChildren(), function(item) {
     item.setInteractive();
 
-    item.on('pointerdown', function (pointer) {
-      console.log('You clicked ' + item.texture.key);
+    item.resizeTween = this.tweens.add({
+      targets: item,
+      scaleX: .97,
+      scaleY: .97,
+      duration: 200,
+      paused: true,
+      yoyo: true,
     });
+
+    item.spinTween = this.tweens.add({
+      targets: item,
+      angle: 90,
+      scaleX: 1.2,
+      scaleY: 1.2,
+      duration: 200,
+      paused: true,
+      yoyo: true,
+    });
+
+    item.tintTweenIn = this.tweens.addCounter({
+      from: 255,
+      to: 190,
+      onUpdate: (tween) => {
+        const value = Math.floor(tween.getValue());
+
+        item.setTint(Phaser.Display.Color.GetColor(value, value, value));
+      },
+      duration: 200,
+      paused: true,
+    })
+
+    item.tintTweenOut = this.tweens.addCounter({
+      from: 200,
+      to: 255,
+      onUpdate: (tween) => {
+        const value = Math.floor(tween.getValue());
+        item.setTint(Phaser.Display.Color.GetColor(value, value, value));
+      },
+      paused: true,
+      duration: 200
+    })
+
+    const index = this.words.findIndex(word => word.key === item.texture.key);
+
+    item.on('pointerdown', function () {
+      if (this.words[index].spanish === this.nextWord.spanish) {
+        item.resizeTween.restart();
+        this.correctSound.play();
+        return this.showNextQuestion();
+      }
+
+      this.wrongSound.play();
+      item.spinTween.restart();
+    }, this);
+
+    item.on('pointerover', () => {
+      item.tintTweenIn.restart();
+    });
+    item.on('pointerout', () => {
+      item.tintTweenIn.stop();
+      item.tintTweenOut.restart();
+    });
+
+    this.words[index].sound = this.sound.add(`${item.texture.key}Audio`);
   }, this);
+
+  this.wordText = this.add.text(30, 20, '', {
+    font: '40px Arial',
+    fill: '#fff'
+  });
+
+  this.showNextQuestion();
 };
+
+gameScene.showNextQuestion = function () {
+  this.nextWord = Phaser.Math.RND.pick(this.words);
+  this.nextWord.sound.play();
+  this.wordText.setText(this.nextWord.spanish);
+}
 
 // our game's configuration
 let config = {
