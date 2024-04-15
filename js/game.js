@@ -66,75 +66,70 @@ gameScene.create = function() {
   this.correctSound = this.sound.add('correctAudio');
   this.wrongSound = this.sound.add('wrongAudio');
 
-  Phaser.Actions.Call(this.items.getChildren(), function(item) {
+  const sprites = this.items.getChildren();
+
+  for (let i = 0; i < sprites.length; i++) {
+    const item = sprites[i];
+
     item.setInteractive();
 
-    item.resizeTween = this.tweens.add({
-      targets: item,
-      scaleX: .97,
-      scaleY: .97,
-      duration: 200,
-      paused: true,
-      yoyo: true,
-    });
-
-    item.spinTween = this.tweens.add({
-      targets: item,
-      angle: 90,
-      scaleX: 1.2,
-      scaleY: 1.2,
-      duration: 200,
-      paused: true,
-      yoyo: true,
-    });
-
-    item.tintTweenIn = this.tweens.addCounter({
-      from: 255,
-      to: 190,
-      onUpdate: (tween) => {
-        const value = Math.floor(tween.getValue());
-        item.setTint(Phaser.Display.Color.GetColor(value, value, value));
-      },
-      duration: 200,
-      paused: true,
-    })
-
-    item.tintTweenOut = this.tweens.addCounter({
-      from: 200,
-      to: 255,
-      onUpdate: (tween) => {
-        const value = Math.floor(tween.getValue());
-        item.setTint(Phaser.Display.Color.GetColor(value, value, value));
-      },
-      paused: true,
-      duration: 200
-    })
-
-    const index = this.words.findIndex(word => word.key === item.texture.key);
-
     item.on('pointerdown', function () {
-      if (this.words[index].spanish === this.nextWord.spanish) {
-        item.resizeTween.restart();
+      if (this.words[i].spanish === this.nextWord.spanish) {
+
+        this.tweens.add({
+          targets: item,
+          scaleX: .9,
+          scaleY: .9,
+          duration: 200,
+          yoyo: true,
+        });
+
         this.correctSound.play();
+
         return this.showNextQuestion();
       }
 
       this.wrongSound.play();
-      item.spinTween.restart();
+
+      this.tweens.add({
+        targets: item,
+        angle: 90,
+        scaleX: 1.2,
+        scaleY: 1.2,
+        duration: 200,
+        yoyo: true,
+      });
+
     }, this);
 
     item.on('pointerover', () => {
-      console.log('HERE')
-      item.tintTweenIn.restart();
+      this.tweens.addCounter({
+        from: 255,
+        to: 188,
+        onUpdate: (tween) => {
+          const value = Math.floor(tween.getValue());
+          const color = Phaser.Display.Color.GetColor(value, value, value);
+          item.setTint(color);
+        },
+        duration: 200,
+      });
     });
 
     item.on('pointerout', () => {
-      item.tintTweenIn.stop();
-      item.tintTweenOut.restart();
+      this.tweens.addCounter({
+        from: 188,
+        to: 255,
+        onUpdate: (tween) => {
+          const value = Math.floor(tween.getValue());
+          const color = Phaser.Display.Color.GetColor(value, value, value);
+          item.setTint(color);
+        },
+        duration: 200,
+      });
     });
 
-    this.words[index].sound = this.sound.add(`${item.texture.key}Audio`);
-  }, this);
+    this.words[i].sound = this.sound.add(`${item.texture.key}Audio`);
+  }
 
   this.wordText = this.add.text(30, 20, '', {
     font: '40px Arial',
